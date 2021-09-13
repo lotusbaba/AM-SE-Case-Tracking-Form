@@ -109,14 +109,14 @@ function onSubmit(e) {
     tktSEemail = shFormResponses.getRange(currentRow, 7).getValues().toString();
     
     if (tktSEemail) {   /* Checking if SE is changing tkt status */
-      if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'alarkin@fastly.com' && tktSubmitterEmail != tktSEemail && tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
+      if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != tktSEemail && tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
       //if (tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
       {
         Logger.log("Not your ticket to edit " + formFindValue);
         errorFlag = 1;
       }
     } else {
-      if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'alarkin@fastly.com' && tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
+      if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
       //if (tktSubmitterEmail != shFormResponses.getRange(currentRow, 1).getValues().toString())
       {
         Logger.log("Not your ticket to edit " + formFindValue);
@@ -128,7 +128,7 @@ function onSubmit(e) {
   if((currentRow === undefined || currentRow === null) && formFindValue == "AM-SE") { /* This is a new entry */
     /* Checking if you're allowed to pick the A/c manager */
     tktSubmitterEmail = e.response.getRespondentEmail();
-    if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'alarkin@fastly.com' && tktSubmitterEmail != formValues[3].getResponse()) // The index for formValues will change depending on whether
+    if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != formValues[3].getResponse()) // The index for formValues will change depending on whether
     //if (tktSubmitterEmail != 'jay.bhaskar@gmail.com' && tktSubmitterEmail != formValues[3].getResponse()) // The index for formValues will change depending on whether
     {
       errorFlag = 3; 
@@ -212,25 +212,37 @@ function onSubmit(e) {
     
     var sheetIndex = 1;
     
-    if (tktSubmitterEmail == 'jay.bhaskar@gmail.com' || tktSubmitterEmail != 'alarkin@fastly.com') /* We are allowed to log tkts for someone else */
+    if (tktSubmitterEmail == 'jay.bhaskar@gmail.com' || tktSubmitterEmail != 'jay.bhaskar@gmail.com') /* We are allowed to log tkts for someone else */
       shFormResponses.getRange(row, sheetIndex++).setValue(formValues[3].getResponse());
     else
       shFormResponses.getRange(row, sheetIndex++).setValue(tktSubmitterEmail);
     
-    shFormResponses.getRange(row, sheetIndex++).setValue(ticketNumber);
+    shFormResponses.getRange(row, sheetIndex++).setValue(ticketNumber); // By now the sheetIndex is at 3
     Logger.log("resp length =" + length);
-    for (var resp = 1; resp < length; resp++, sheetIndex++) {
+    for (var resp = 1; resp < length; resp++, sheetIndex++) { // One long loop that could be made more modular and efficient
       //Logger.log(formValues[resp].getResponse() + " Sheet Index is at " + sheetIndex);
-      if(formValues[resp-1].getResponse() == 'No' && formValues[resp].getItem().getTitle() == "Is this an opportunity?") { /* We will follow discipline of getting y/n answers for items right before they're entered */
+      if(formValues[resp].getResponse() == 'No' && formValues[resp].getItem().getTitle() == "Is this an opportunity?") { /* We will follow discipline of getting y/n answers for items right before they're entered */
         //respFlag = 1;
         //Logger.log("Flag is now set");
-        //Logger.log("Will continue to next form entry +2 " + formValues[resp].getItem().getTitle());
+        Logger.log("Setting value " + formValues[resp].getResponse() + " at sheetIndex " + sheetIndex + " row " + row);
+        shFormResponses.getRange(row, sheetIndex).setValue(formValues[resp].getResponse());
+        Logger.log("Will continue to next form entry +2 " + formValues[resp].getItem().getTitle());
+        sheetIndex+=1;
+        continue;
+      } else if(formValues[resp].getResponse() == 'No' && formValues[resp].getItem().getTitle() == "Will you assign an SE?") {
+        Logger.log("Setting value " + formValues[resp].getResponse() + " at sheetIndex " + sheetIndex + " row " + row);
+        shFormResponses.getRange(row, sheetIndex).setValue(formValues[resp].getResponse());
+        Logger.log("Will continue to next form entry +3 " + formValues[resp].getItem().getTitle());
         sheetIndex+=2;
-      } else if(formValues[resp-1].getResponse() == 'No') { /* We will follow discipline of getting y/n answers for items right before they're entered */
+        continue;
+      } else if(formValues[resp].getResponse() == 'No') { /* We will follow discipline of getting y/n answers for items right before they're entered */
+        Logger.log("Setting value " + formValues[resp].getResponse() + " at sheetIndex " + sheetIndex + " row " + row);
+        shFormResponses.getRange(row, sheetIndex).setValue(formValues[resp].getResponse());
         //respFlag = 1;
         //Logger.log("Flag is now set");
-        //Logger.log("Will continue to next form entry +1 " + formValues[resp].getItem().getTitle());
-        sheetIndex++;
+        Logger.log("Will continue to next form entry +1 " + formValues[resp].getItem().getTitle());
+        //sheetIndex++;
+        //continue;
       }
       if(formValues[resp].getItem().getTitle() == "Case Type")
       {
@@ -278,6 +290,7 @@ function onSubmit(e) {
         priority = formValues[resp].getResponse();
       }
       if (formValues[resp].getItem().getTitle() == 'Duplicate or related case number') { //We don't want to set case numbers not present
+        Logger.log("Duplicate or related case number is " +  formValues[resp].getResponse() + " sheet index is " + sheetIndex);
         if (!missingDuplicateFlag)
           shFormResponses.getRange(row, sheetIndex).setValue(formValues[resp].getResponse());
       } //Else business as usual
@@ -443,13 +456,13 @@ function onSubmit(e) {
           if (etrolControlsServiceEmail3 != null)
             event.addGuest(etrolControlsServiceEmail3);
           event.setDescription(customerName+caseType);
-          shFormResponses.getRange(row, sheetIndex).setValue(event.getId());
+          shFormResponses.getRange(row, 19).setValue(event.getId());
         } else {
           //var events = calendar.getEventsForDay(new Date(meetingDate));
-          var eventId = shFormResponses.getRange(row, sheetIndex).getValue();
+          var eventId = shFormResponses.getRange(row, 19).getValue();
           var event = calendar.getEventById(eventId);
           var advancedArgs = {description: title};
-          Logger.log("Deleting event with id" + eventId);
+          Logger.log("Deleting event with id" + eventId + " on row " + row);
           
           if (event != undefined && event != null)
             event.deleteEvent();
@@ -467,7 +480,7 @@ function onSubmit(e) {
           if (etrolControlsServiceEmail3 != null)
             event.addGuest(etrolControlsServiceEmail3);
           event.setDescription(customerName+caseType);
-          shFormResponses.getRange(row, sheetIndex).setValue(event.getId());
+          shFormResponses.getRange(row, 19).setValue(event.getId());
         }
         Logger.log("email " + etrolControlsServiceEmail1 + " customer " + customerName + "case type" + caseType);
         Logger.log("Event end time " + event.getEndTime() + "Event start time " + new Date(startTime));
@@ -481,7 +494,6 @@ function onSubmit(e) {
       MailApp.sendEmail(etrolControlsServiceEmail3, subject, emailBody);
     if (missingDuplicateFlag)
       MailApp.sendEmail(tktSubmitterEmail, "Couldn't find duplicate/related ticket", emailBody+"\n\nDuplicate/Related SE Ticket Submitted " + duplicateCaseNum + " Not found");
-      Logger.log("2. AM email is " + amEmail);
     MailApp.sendEmail(amEmail, subject, emailBody);
     //Logger.log("2. Submitter email is " + tktSubmitterEmail);
     
